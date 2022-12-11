@@ -32,7 +32,14 @@ const UsuarioSchema = Schema({
         default: false
     }
 
-})
+});
+
+
+// excluimos al retorno del JSON al password y al __v
+UsuarioSchema.methods.toJSON = function(){
+    const {__v, password, ...usuario} = this.toObject()
+    return usuario
+}
 
 
 module.exports = model('Usuario', UsuarioSchema)
