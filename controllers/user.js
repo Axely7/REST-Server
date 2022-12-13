@@ -3,14 +3,27 @@ const bcryptjs = require('bcryptjs')
 const Usuario = require('../models/usuario');
 
 
-const userGet = (req = request, res = response) => {
-  const { q, nombre, page = 1 } = req.query;
+const userGet = async(req = request, res = response) => {
+  // const { q, nombre, page = 1 } = req.query;
+
+  const {limite = 5, desde = 0} = req.query
+  // Unicamente retorna aquellos registros con estado en true.
+
+  const query = { estado: true }
+
+
+  // Ejecuta las promesas de manera simultanea:
+
+  const [ total, usuarios ] = await Promise.all([
+    Usuario.countDocuments(query),
+    Usuario.find(query)
+    .skip(desde)
+    .limit(limite)
+  ]);
 
   res.json({
-    msg: "get API - controlador",
-    q,
-    nombre,
-    page,
+    total,
+    usuarios
   });
 };
 
@@ -28,10 +41,7 @@ const userPut = async (req, res = response) => {
 
   const usuario = await Usuario.findByIdAndUpdate(id, resto)
 
-  res.json({
-    msg: "put API - controlador",
-    usuario
-  });
+  res.json(usuario);
 };
 
 const userPost = async (req, res = response) => {
@@ -56,10 +66,15 @@ const userPost = async (req, res = response) => {
   });
 };
 
-const userDelete = (req, res = response) => {
-  res.json({
-    msg: "delete API - controlador",
-  });
+const userDelete = async(req, res = response) => {
+
+  const { id } = req.params; 
+
+  // Fisicamente lo borramos
+  // const usuario = await Usuario.findByIdAndDelete(id)
+  const usuario = await Usuario.findByIdAndUpdate(id, { estado: false })
+
+  res.json(usuario);
 };
 
 module.exports = {

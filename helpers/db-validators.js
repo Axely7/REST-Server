@@ -20,7 +20,7 @@ const emailExiste = async (correo) => {
 }
 
 const existeUsuarioPorId = async (id) => {
-  const existeUsuario = await Usuario.findById({ id })
+  const existeUsuario = await Usuario.findOne({ _id: id })
   if(!existeUsuario){
     // return res.status(400).json({
     //   msg: 'Ese correo ya está registrado'

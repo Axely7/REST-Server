@@ -16,6 +16,7 @@ const router = Router();
 
 router.get("/", userGet);
 
+// Todo aquello dentro de corchetes son validaciones: middlewares
 router.put("/:id", [
   check('id', 'No es un ID válido').isMongoId(),
   check('id').custom(existeUsuarioPorId),
@@ -33,6 +34,10 @@ router.post("/", [
   validarCampos
 ], userPost);
 
-router.delete("/", userDelete);
+router.delete("/:id", [
+  check('id', 'No es un ID válido').isMongoId(),
+  check('id').custom(existeUsuarioPorId),
+  validarCampos
+], userDelete);
 
 module.exports = router;
