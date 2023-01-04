@@ -32,7 +32,7 @@ const obtenerCategoria = async(req = request, res = response) => {
 
     const { id } = req.params;
 
-    const categoria = await Categoria.findById(id)
+    const categoria = await Categoria.findById(id).populate('usuario', 'nombre');
 
     res.json(categoria)
 
@@ -71,9 +71,12 @@ const actualizarCategoria = async(req, res = response) => {
 
     const { id } = req.params;
 
-    const { nombre } = req.body;
+    const { estado, usuario, ...data } = req.body;
 
-    const categoria = await Categoria.findByIdAndUpdate(id, { nombre })
+    data.nombre = data.nombre.toUpperCase();
+    data.usuario = req.usuario._id;
+
+    const categoria = await Categoria.findByIdAndUpdate(id, data, { new: true } ).populate('usuario', 'nombre');
 
 
     res.json(categoria)
@@ -86,7 +89,7 @@ const borrarCategoria = async(req, res = response) => {
 
     const { id } = req.params;
 
-    const categoria = await Categoria.findByIdAndUpdate(id, { estado: false })
+    const categoria = await Categoria.findByIdAndUpdate(id, { estado: false }, { new: true }).populate('usuario', 'nombre')
 
     res.json(categoria)
 }
