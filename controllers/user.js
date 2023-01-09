@@ -46,8 +46,6 @@ const userPut = async (req, res = response) => {
 
 const userPost = async (req, res = response) => {
 
-  
-
   const {nombre, correo, password, rol} = req.body;
   // para agarrar las demas propiedades:  const { google, ...resto } = req.body
   const usuario = new Usuario( {nombre, correo, password, rol} );
@@ -55,7 +53,7 @@ const userPost = async (req, res = response) => {
   // Encriptar la contraseña
   const salt = bcryptjs.genSaltSync()
   usuario.password = bcryptjs.hashSync(password, salt)
-
+  
 
   // Guardad en BD
   await usuario.save()
