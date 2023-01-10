@@ -1,11 +1,12 @@
 const { response } = require('express');
-const { Usuario } = require('../models');
+const { Usuario, Categoria, Producto } = require('../models');
 const { ObjectId } = require('mongoose').Types;
 
 const coleccionesPermitidas = [
     'usuarios',
     'categorias',
     'productos',
+    'productos_categoria',
     'roles'
 ]
 
@@ -20,10 +21,81 @@ const buscarUsuarios = async(termino = '', res = response) => {
         })
     }
 
-    const usuarios = await Usuario.find({ nombre: termino })
+    const regex = RegExp(termino, 'i');
+
+    const usuarios = await Usuario.find({ 
+        $or: [{nombre: regex}, {correo: regex}],
+        $and: [{ estado: true }]
+     })
 
     return res.json({
         results: usuarios
+    })
+
+}
+
+const buscarCategorias = async(termino = '', res = response) => {
+    
+    const esMongoID = ObjectId.isValid(termino);
+
+    if(esMongoID){
+        const categoria = await Categoria.findById(termino);
+        return res.json({
+            results: (categoria) ? [categoria] : []
+        })
+    }
+
+    const regex = RegExp(termino, 'i');
+
+    const categorias = await Categoria.find({ nombre: regex, estado: true })
+
+    return res.json({
+        results: categorias
+    })
+}
+
+const buscarProductos = async(termino = '', res = response) => {
+    const esMongoID = ObjectId.isValid(termino);
+
+    if(esMongoID){
+        const producto = await Producto.findById(termino).populate('categoria', 'nombre');
+        return res.json({
+            results: (producto) ? [producto] : []
+        })
+    }
+
+    const regex = RegExp(termino, 'i');
+
+    const productos = await Producto.find({ nombre: regex, estado: true }).populate('categoria', 'nombre');
+
+    return res.json({
+        results: productos
+    })
+}
+
+const searchProductsByCategory = async(termino = '', res = response) => {
+    const esMongoID = ObjectId.isValid(termino);
+
+    if(esMongoID){
+        const producto = await Producto.find({ categoria: ObjectId(termino) }).populate('categoria', 'nombre');
+        return res.json({
+            results: (producto) ? [producto] : []
+        })
+    }
+
+    const regex = RegExp(termino, 'i');
+
+    const categorias = await Categoria.find({ nombre: regex, estado: true });
+
+    const productos = await Producto.find({
+        $or: [...categorias.map(categoria => ({
+            categoria: categoria._id
+        }))],
+        $and: [{ estado: true }]
+    }).populate('categoria', 'nombre')
+
+    return res.json({
+        results: productos
     })
 
 }
@@ -42,15 +114,18 @@ const buscar = (req, res = response) => {
 
     switch (coleccion) {
         case 'usuarios':
-            buscarUsuarios(termino, res)
+            buscarUsuarios(termino, res);
             
             break;
         case 'categorias':
-        
+            buscarCategorias(termino, res);
             break;
 
         case 'productos':
-        
+            buscarProductos(termino, res);
+            break;
+        case 'productos_categoria':
+            searchProductsByCategory(termino, res);
             break;
     
         default:
