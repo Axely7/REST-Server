@@ -1,10 +1,14 @@
-const { response } = require("express");
+const { response, request } = require("express");
 const { subirArchivo } = require("../helpers");
 const { Usuario, Producto } = require('../models');
+const {uploadFile} = require('../s3')
 const path = require('path');
 const fs = require('fs')
 const cloudinary = require('cloudinary').v2
+
 cloudinary.config(process.env.CLOUDINARY_URL);
+
+
 
 const cargarArchivo = async(req, res = response) => {
 
@@ -74,7 +78,7 @@ const actualizarImagen = async(req, res = response) => {
 }
 
 
-const actualizarImagenCloudinary = async(req, res = response) => {
+const actualizarImagenAWS = async(req = request, res = response) => {
 
     const { id, coleccion } = req.params;
   
@@ -113,12 +117,17 @@ const actualizarImagenCloudinary = async(req, res = response) => {
        
     }
 
-    const {tempFilePath} = req.files.archivo
-    const {secure_url} = await cloudinary.uploader.upload(tempFilePath)
-
-    modelo.img = secure_url;
-
+    const imageUrl = await uploadFile(req.files.archivo, coleccion)
+    modelo.img = imageUrl;
     await modelo.save();
+
+    // const {tempFilePath} = req.files.archivo
+
+    // const {secure_url} = await cloudinary.uploader.upload(tempFilePath)
+
+    // modelo.img = secure_url;
+
+    // await modelo.save();
 
 
     res.json(modelo)
@@ -126,7 +135,7 @@ const actualizarImagenCloudinary = async(req, res = response) => {
 
 
 
-const mostrarImagen = async(req, res = response) => {
+const mostrarImagen = async(req = request, res = response) => {
 
     const { id, coleccion } = req.params;
   
@@ -177,5 +186,5 @@ module.exports = {
     cargarArchivo,
     actualizarImagen,
     mostrarImagen,
-    actualizarImagenCloudinary
+    actualizarImagenAWS
 }
