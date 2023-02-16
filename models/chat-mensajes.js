@@ -1,4 +1,10 @@
-
+class Mensaje {
+    constructor(uid, nombre, mensaje){
+        this.uid = uid
+        this.nombre = nombre
+        this.mensaje = mensaje
+    }
+}
 
 
 class ChatMensajes{
@@ -17,6 +23,19 @@ class ChatMensajes{
     }
 
     enviarMensaje(uid, nombre, mensaje){
-        
+        this.mensajes.unshift(
+            new Mensaje(uid, nombre, mensaje)
+        )
+    }
+
+    conectarUsuario(usuario){
+        this.usuarios[usuario.id] = usuario
+    }
+
+    desconectarUsuario(id){
+        delete this.usuarios[id]
     }
 }
+
+
+module.exports = ChatMensajes
