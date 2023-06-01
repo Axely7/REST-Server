@@ -64,9 +64,11 @@ const crearProducto = async (req, res = response) => {
     const producto =  new Producto(data);
 
     // Guardar DB
-    await producto.save()
+    const nuevoProducto = await producto.save()
+    await nuevoProducto.populate('usuario', 'nomber').populate('categoria', 'nombre').execPopulate();
 
-    res.status(201).json(producto)
+
+    res.status(201).json(nuevoProducto)
 }
 
 
